@@ -37,7 +37,6 @@ class MoviesProvider extends ChangeNotifier {
         'api_key': _apiKey,
         'language': 'es-MX',
       });
-
       // Agregamos timeout para evitar que se congele si la red es lenta
       final response = await http.get(url).timeout(Duration(seconds: 10));
 

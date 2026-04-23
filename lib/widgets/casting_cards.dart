@@ -19,7 +19,7 @@ class CastingCards extends StatelessWidget {
         itemBuilder: (_, int index) => _CastCard(cast: casts[index]),
       ),
     );
-  } // <--- FALTABA ESTA LLAVE DE CIERRE
+  }
 }
 
 class _CastCard extends StatelessWidget {
@@ -29,10 +29,8 @@ class _CastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Verificamos si profilePath existe y no es null
     final String? imagePath = cast.profilePath;
 
-    // Construimos la URL completa si existe el path
     final String imageUrl = imagePath != null
         ? 'https://image.tmdb.org/t/p/w500$imagePath'
         : '';
@@ -50,12 +48,10 @@ class _CastCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               child: FadeInImage(
                 placeholder: const AssetImage('assets/no-image.jpg'),
-                // Ajuste correcto para la propiedad image
                 image: imageUrl.isNotEmpty
                     ? NetworkImage(imageUrl) as ImageProvider<Object>
                     : const AssetImage('assets/no-image.jpg'),
                 fit: BoxFit.cover,
-                // Opcional: manejar errores de carga de imagen
                 imageErrorBuilder: (context, error, stackTrace) =>
                     const Icon(Icons.person, size: 50, color: Colors.grey),
               ),

@@ -112,8 +112,12 @@ class _CustomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String imageUrl =
-        'https://image.tmdb.org/t/p/w500 ${movie.backdropPath}';
+    // Eliminar espacios extra y validar que backdropPath no sea null
+    final String? path = movie.backdropPath;
+    final String imageUrl = path != null
+        ? 'https://image.tmdb.org/t/p/w500$path'
+        : ''; // O una URL de fallback si lo deseas
+
     return SliverAppBar(
       backgroundColor: Colors.blue,
       expandedHeight: 200,
@@ -121,20 +125,28 @@ class _CustomAppBar extends StatelessWidget {
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
-        titlePadding: const EdgeInsets.all(0),
+        titlePadding: EdgeInsets.all(0),
         title: Container(
           width: double.infinity,
           alignment: Alignment.bottomCenter,
           color: Colors.black12,
           child: Text(
             movie.title,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: Colors.white, fontSize: 16),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         background: FadeInImage(
-          placeholder: const AssetImage('assets/loading.gif'),
-          image: NetworkImage(imageUrl),
+          placeholder: AssetImage('assets/loading.gif'),
+          // Usar NetworkImage directamente o FadeInImage con errorBuilder
+          image: imageUrl.isNotEmpty
+              ? NetworkImage(imageUrl) as ImageProvider
+              : AssetImage('assets/no-image.jpg'),
           fit: BoxFit.cover,
+          imageErrorBuilder: (context, error, stackTrace) {
+            print("Error cargando backdrop: $error");
+            return Image.asset('assets/no-image.jpg', fit: BoxFit.cover);
+          },
         ),
       ),
     );
@@ -143,44 +155,42 @@ class _CustomAppBar extends StatelessWidget {
 
 class _PosterAndTitle extends StatelessWidget {
   final Movie movie;
-
   const _PosterAndTitle({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
-    final String posterPath = movie.posterPath?.trim() ?? '';
-    final String imageUrl = posterPath.isNotEmpty
-        ? 'https://image.tmdb.org/t/p/w500$posterPath'
+    final String? path = movie.posterPath;
+    final String imageUrl = path != null
+        ? 'https://image.tmdb.org/t/p/w500$path'
         : '';
 
     return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.only(top: 20),
+      padding: EdgeInsets.symmetric(horizontal: 20),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: FadeInImage(
-              placeholder: const AssetImage('assets/no-image.jpg'),
-              image: imageUrl.isNotEmpty
-                  ? NetworkImage(imageUrl) as ImageProvider
-                  : const AssetImage('assets/no-image.jpg'),
-              fit: BoxFit.cover,
-              height: 150,
+            borderRadius: BorderRadiusGeometry.circular(20),
+            child: SizedBox(
+              // Envolver en SizedBox para limitar tamaño
               width: 100,
-              imageErrorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  'assets/no-image.jpg',
-                  height: 150,
-                  width: 100,
-                  fit: BoxFit.cover,
-                );
-              },
+              height: 150,
+              child: FadeInImage(
+                placeholder: AssetImage('assets/no-image.jpg'),
+                image: imageUrl.isNotEmpty
+                    ? NetworkImage(imageUrl) as ImageProvider
+                    : AssetImage('assets/no-image.jpg'),
+                fit: BoxFit.cover,
+                imageErrorBuilder: (context, error, stackTrace) {
+                  print("Error cargando poster: $error");
+                  return Image.asset('assets/no-image.jpg', fit: BoxFit.cover);
+                },
+              ),
             ),
           ),
-          const SizedBox(width: 20),
+          SizedBox(width: 20),
           Expanded(
+            // CRUCIAL: Usar Expanded para que el texto no desborde
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -190,17 +200,13 @@ class _PosterAndTitle extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   maxLines: 2,
                 ),
-                const SizedBox(height: 5),
+                SizedBox(height: 5),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.star_outline,
-                      size: 15,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 5),
+                    Icon(Icons.star_outline, size: 15, color: Colors.grey),
+                    SizedBox(width: 5),
                     Text(
-                      movie.voteAverage.toStringAsFixed(1),
+                      movie.voteAverage.toStringAsFixed(1), // Formatear número
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],

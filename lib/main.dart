@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Peliculas',
       initialRoute: 'home',
-      routes: {'home': (_) => HomeScreen(), 'details': (_) => DetailScreen()},
+      routes: {'home': (_) => HomeScreen(), 'detail': (_) => DetailScreen()},
       theme: ThemeData.light().copyWith(
         appBarTheme: AppBarTheme(backgroundColor: Colors.lightBlue),
       ),

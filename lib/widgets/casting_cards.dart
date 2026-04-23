@@ -8,7 +8,7 @@ class CastingCards extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 30),
       width: double.infinity,
-      height: 19,
+      height: 220,
       child: ListView.builder(
         itemCount: 10,
         scrollDirection: Axis.horizontal,
@@ -26,23 +26,34 @@ class _CastCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 10),
       width: 110,
-      height: 100,
+      height: 210,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: FadeInImage(
-              placeholder: AssetImage('assets/no-image.jpg'),
-              image: AssetImage('assets/no-image.jpg'),
-              fit: BoxFit.cover,
+          SizedBox(
+            width: 110,
+            height: 150,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: FadeInImage(
+                placeholder: AssetImage('assets/no-image.jpg'),
+                image: AssetImage('assets/no-image.jpg'),
+                fit: BoxFit.cover,
+                imageErrorBuilder: (context, error, stackTrace) {
+                  return Image.asset('assets/no-image.jpg', fit: BoxFit.cover);
+                },
+              ),
             ),
           ),
-          SizedBox(height: 5),
-          Text(
-            'Actor Name',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
+          SizedBox(height: 8),
+          Expanded(
+            child: Text(
+              'Actor Name',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, height: 1.2),
+            ),
           ),
         ],
       ),

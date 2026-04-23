@@ -1,58 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:peliculas_app/models/movie.dart';
 
 class CastingCards extends StatelessWidget {
-  const CastingCards({super.key});
+  final List<Cast> casts;
+
+  const CastingCards({super.key, required this.casts});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 30),
+      margin: const EdgeInsets.only(bottom: 30),
       width: double.infinity,
-      height: 220,
+      height: 210,
       child: ListView.builder(
-        itemCount: 10,
+        itemCount: casts.length,
         scrollDirection: Axis.horizontal,
-        itemBuilder: (_, int index) => _CastCard(),
+        itemBuilder: (_, int index) => _CastCard(cast: casts[index]),
       ),
     );
-  }
+  } // <--- FALTABA ESTA LLAVE DE CIERRE
 }
 
 class _CastCard extends StatelessWidget {
-  const _CastCard({super.key});
+  final Cast cast;
+
+  const _CastCard({super.key, required this.cast});
 
   @override
   Widget build(BuildContext context) {
+    // Verificamos si profilePath existe y no es null
+    final String? imagePath = cast.profilePath;
+
+    // Construimos la URL completa si existe el path
+    final String imageUrl = imagePath != null
+        ? 'https://image.tmdb.org/t/p/w500$imagePath'
+        : '';
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 10),
       width: 110,
-      height: 210,
+      height: 180,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
             width: 110,
-            height: 150,
+            height: 140,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: FadeInImage(
-                placeholder: AssetImage('assets/no-image.jpg'),
-                image: AssetImage('assets/no-image.jpg'),
+                placeholder: const AssetImage('assets/no-image.jpg'),
+                // Ajuste correcto para la propiedad image
+                image: imageUrl.isNotEmpty
+                    ? NetworkImage(imageUrl) as ImageProvider<Object>
+                    : const AssetImage('assets/no-image.jpg'),
                 fit: BoxFit.cover,
-                imageErrorBuilder: (context, error, stackTrace) {
-                  return Image.asset('assets/no-image.jpg', fit: BoxFit.cover);
-                },
+                // Opcional: manejar errores de carga de imagen
+                imageErrorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.person, size: 50, color: Colors.grey),
               ),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 5),
           Expanded(
             child: Text(
-              'Actor Name',
+              cast.name ?? 'Sin nombre',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, height: 1.2),
+              style: const TextStyle(fontSize: 12),
             ),
           ),
         ],

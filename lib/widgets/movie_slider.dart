@@ -23,6 +23,7 @@ class MovieSlider extends StatelessWidget {
           height: 270,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
+            // Añadimos un item extra para el título
             itemCount: moviesProvider.popularMovies.length + 1,
             itemBuilder: (_, int index) {
               if (index == 0) {
@@ -57,17 +58,16 @@ class _MoviePoster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // OPTIMIZACIÓN: Usar w185 en lugar de w500 para listas reduce el uso de memoria en ~70%
-    // Esto es crucial para evitar crashes en emuladores o dispositivos con poca RAM.
+    // Validación estricta de la URL
     final String? path = movie.posterPath;
-    // Eliminamos cualquier espacio y usamos tamaño pequeño
-    final String imageUrl = (path != null && path.isNotEmpty)
-        ? 'https://image.tmdb.org/t/p/w185${path.trim()}'
+    final bool hasImage = path != null && path.isNotEmpty;
+    final String imageUrl = hasImage
+        ? 'https://image.tmdb.org/t/p/w185${path.trim()}' // Usamos w185 para ahorrar memoria
         : '';
 
     return Container(
       width: 130,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       child: Column(
         children: [
           GestureDetector(
@@ -75,26 +75,31 @@ class _MoviePoster extends StatelessWidget {
               Navigator.pushNamed(context, 'detail', arguments: movie);
             },
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
               child: Container(
                 color: Colors.grey[800], // Color de fondo mientras carga
                 width: 130,
-                height: 195, // Ajustado para proporción de póster
-                child: imageUrl.isNotEmpty
+                height: 195,
+                child: hasImage
                     ? Image.network(
                         imageUrl,
                         fit: BoxFit.cover,
-                        width: 130,
-                        height: 195,
-                        // Manejo de errores robusto
+                        // frameBuilder ayuda a evitar parpadeos y gestiona mejor la memoria
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded) return child;
+                              return AnimatedOpacity(
+                                opacity: frame == null ? 0 : 1,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOut,
+                                child: child,
+                              );
+                            },
                         errorBuilder: (context, error, stackTrace) {
-                          // Opcional: Imprimir solo en debug para no saturar logs
-                          // print('Error imagen: ${movie.title}');
-                          return Image.asset(
-                            'assets/no-image.jpg',
-                            fit: BoxFit.cover,
-                            width: 130,
-                            height: 195,
+                          // Fallback silencioso si falla la red
+                          return const Icon(
+                            Icons.broken_image,
+                            color: Colors.white54,
                           );
                         },
                         loadingBuilder: (context, child, loadingProgress) {
@@ -113,16 +118,14 @@ class _MoviePoster extends StatelessWidget {
                           );
                         },
                       )
-                    : Image.asset(
-                        'assets/no-image.jpg',
-                        fit: BoxFit.cover,
-                        width: 130,
-                        height: 195,
+                    : const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.white54,
                       ),
               ),
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 8),
           SizedBox(
             height: 40,
             child: Text(
@@ -130,7 +133,7 @@ class _MoviePoster extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
           ),
         ],

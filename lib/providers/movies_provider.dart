@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:peliculas_app/models/models.dart';
+import 'dart:convert';
 
 class MoviesProvider extends ChangeNotifier {
   String _apyKey = 'cd000327b9663451fd4de423f4e0aa47';
@@ -23,5 +24,21 @@ class MoviesProvider extends ChangeNotifier {
     final nowPlayingResponse = NowPlayingResponse.fromJson(response.body);
     onDisplayMovies = nowPlayingResponse.results;
     notifyListeners();
+  }
+
+  Future<List<Cast>> getCast(int movieId) async {
+    final url = Uri.https('api.themoviedb.org', '3/movie/$movieId/credits', {
+      'api_key': _apyKey,
+      'language': 'es-MX',
+    });
+
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+      // La API devuelve los actores en la propiedad "cast"
+      return CastResponse.fromJson(decodedData).cast;
+    } else {
+      return [];
+    }
   }
 }

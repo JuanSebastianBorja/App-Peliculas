@@ -1,14 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:peliculas_app/models/movie.dart';
+import 'package:peliculas_app/models/cast.dart';
 import 'package:peliculas_app/widgets/widgets.dart';
+import 'package:peliculas_app/providers/movies_provider.dart';
+import 'package:provider/provider.dart';
 
-class DetailScreen extends StatelessWidget {
+class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final Movie movie = ModalRoute.of(context)!.settings.arguments as Movie;
+  State<DetailScreen> createState() => _DetailScreenState();
+}
 
+class _DetailScreenState extends State<DetailScreen> {
+  late Movie movie;
+  List<Cast>? castList;
+
+  @override
+  void initState() {
+    super.initState();
+    movie = ModalRoute.of(context)!.settings.arguments as Movie;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (castList == null) {
+      _loadCast();
+    }
+  }
+
+  Future<void> _loadCast() async {
+    final moviesProvider = Provider.of<MoviesProvider>(context, listen: false);
+    final cast = await moviesProvider.getCast(movie.id);
+
+    if (mounted) {
+      setState(() {
+        castList = cast;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -17,7 +51,15 @@ class DetailScreen extends StatelessWidget {
             delegate: SliverChildListDelegate([
               _PosterAndTitle(movie: movie),
               _Overview(movie: movie),
-              CastingCards(casts: movie.cast),
+              // Mostrar loader o lista
+              castList == null
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : CastingCards(casts: castList!),
             ]),
           ),
         ],
@@ -28,14 +70,12 @@ class DetailScreen extends StatelessWidget {
 
 class _CustomAppBar extends StatelessWidget {
   final Movie movie;
-
   const _CustomAppBar({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
     final String imageUrl =
-        'https://image.tmdb.org/t/p/w500${movie.backdropPath}';
-
+        'https://image.tmdb.org/t/p/w500 ${movie.backdropPath}';
     return SliverAppBar(
       backgroundColor: Colors.blue,
       expandedHeight: 200,
@@ -43,18 +83,18 @@ class _CustomAppBar extends StatelessWidget {
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
-        titlePadding: EdgeInsets.all(0),
+        titlePadding: const EdgeInsets.all(0),
         title: Container(
           width: double.infinity,
           alignment: Alignment.bottomCenter,
           color: Colors.black12,
           child: Text(
             movie.title,
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
         ),
         background: FadeInImage(
-          placeholder: AssetImage('assets/loading.gif'),
+          placeholder: const AssetImage('assets/loading.gif'),
           image: NetworkImage(imageUrl),
           fit: BoxFit.cover,
         ),
@@ -65,30 +105,28 @@ class _CustomAppBar extends StatelessWidget {
 
 class _PosterAndTitle extends StatelessWidget {
   final Movie movie;
-
   const _PosterAndTitle({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
     final String imageUrl =
-        'https://image.tmdb.org/t/p/w500${movie.posterPath}';
-
+        'https://image.tmdb.org/t/p/w500 ${movie.posterPath}';
     return Container(
-      margin: EdgeInsets.only(top: 20),
-      padding: EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           ClipRRect(
             borderRadius: BorderRadiusGeometry.circular(20),
             child: FadeInImage(
-              placeholder: AssetImage('assets/no-image.jpg'),
+              placeholder: const AssetImage('assets/no-image.jpg'),
               image: NetworkImage(imageUrl),
               fit: BoxFit.cover,
               height: 150,
               width: 100,
             ),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -100,8 +138,8 @@ class _PosterAndTitle extends StatelessWidget {
               ),
               Row(
                 children: [
-                  Icon(Icons.star_outline, size: 15, color: Colors.grey),
-                  SizedBox(width: 5),
+                  const Icon(Icons.star_outline, size: 15, color: Colors.grey),
+                  const SizedBox(width: 5),
                   Text(
                     movie.voteAverage.toString(),
                     style: Theme.of(context).textTheme.bodyMedium,
@@ -118,13 +156,12 @@ class _PosterAndTitle extends StatelessWidget {
 
 class _Overview extends StatelessWidget {
   final Movie movie;
-
   const _Overview({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       child: Text(
         movie.overview ?? 'Sin descripción disponible.',
         textAlign: TextAlign.justify,

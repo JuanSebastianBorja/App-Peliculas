@@ -9,10 +9,12 @@ class MoviesProvider extends ChangeNotifier {
   String _language = 'es-ES';
 
   List<Movie> onDisplayMovies = [];
+  List<Movie> popularMovies = [];
 
   MoviesProvider() {
     print('Movies provider inicializado');
     this.getOnDisplayMovies();
+    this.getPopularMovies();
   }
 
   getOnDisplayMovies() async {
@@ -51,6 +53,22 @@ class MoviesProvider extends ChangeNotifier {
       print('Excepción en getCast: $e');
       // Retornamos lista vacía en caso de error para no romper la UI
       return [];
+    }
+  }
+
+  getPopularMovies() async {
+    try {
+      var url = Uri.https(this._baseUrl, '3/movie/popular', {
+        'api_key': _apiKey,
+        'language': _language,
+        'page': '1',
+      });
+      final response = await http.get(url);
+      final popularResponse = NowPlayingResponse.fromJson(response.body);
+      popularMovies = popularResponse.results;
+      notifyListeners();
+    } catch (e) {
+      print('Error al cargar películas populares: $e');
     }
   }
 }

@@ -6,38 +6,22 @@ import 'package:peliculas_app/providers/movies_provider.dart';
 import 'package:provider/provider.dart';
 
 class DetailScreen extends StatefulWidget {
-  const DetailScreen({super.key});
+  final Movie movie;
+  const DetailScreen({super.key, required this.movie});
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
 }
 
 class _DetailScreenState extends State<DetailScreen> {
-  late Movie movie;
   List<Cast>? castList;
   bool isLoading = true;
   String? errorMessage;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Obtenemos los argumentos solo una vez
-    if (castList == null && !isLoading) return;
-
-    final args = ModalRoute.of(context)?.settings.arguments;
-
-    if (args is Movie) {
-      movie = args;
-      // Cargamos el elenco si aún no lo hemos hecho
-      if (castList == null && isLoading) {
-        _loadCast();
-      }
-    } else {
-      setState(() {
-        errorMessage = "No se recibió información de la película";
-        isLoading = false;
-      });
-    }
+  void initState() {
+    super.initState();
+    _loadCast();
   }
 
   Future<void> _loadCast() async {
@@ -47,10 +31,9 @@ class _DetailScreenState extends State<DetailScreen> {
         listen: false,
       );
 
-      // Verificamos que el ID sea válido
-      if (movie.id <= 0) throw Exception("ID de película inválido");
+      if (widget.movie.id <= 0) throw Exception("ID de película inválido");
 
-      final cast = await moviesProvider.getCast(movie.id);
+      final cast = await moviesProvider.getCast(widget.movie.id);
 
       if (mounted) {
         setState(() {
@@ -81,11 +64,11 @@ class _DetailScreenState extends State<DetailScreen> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          _CustomAppBar(movie: movie),
+          _CustomAppBar(movie: widget.movie),
           SliverList(
             delegate: SliverChildListDelegate([
-              _PosterAndTitle(movie: movie),
-              _Overview(movie: movie),
+              _PosterAndTitle(movie: widget.movie),
+              _Overview(movie: widget.movie),
               if (isLoading)
                 const Padding(
                   padding: EdgeInsets.all(20.0),
@@ -112,11 +95,10 @@ class _CustomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Eliminar espacios extra y validar que backdropPath no sea null
     final String? path = movie.backdropPath;
     final String imageUrl = path != null
         ? 'https://image.tmdb.org/t/p/w500$path'
-        : ''; // O una URL de fallback si lo deseas
+        : '';
 
     return SliverAppBar(
       backgroundColor: Colors.blue,
@@ -138,7 +120,6 @@ class _CustomAppBar extends StatelessWidget {
         ),
         background: FadeInImage(
           placeholder: AssetImage('assets/loading.gif'),
-          // Usar NetworkImage directamente o FadeInImage con errorBuilder
           image: imageUrl.isNotEmpty
               ? NetworkImage(imageUrl) as ImageProvider
               : AssetImage('assets/no-image.jpg'),
@@ -172,7 +153,6 @@ class _PosterAndTitle extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadiusGeometry.circular(20),
             child: SizedBox(
-              // Envolver en SizedBox para limitar tamaño
               width: 100,
               height: 150,
               child: FadeInImage(
@@ -190,7 +170,6 @@ class _PosterAndTitle extends StatelessWidget {
           ),
           SizedBox(width: 20),
           Expanded(
-            // CRUCIAL: Usar Expanded para que el texto no desborde
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -206,7 +185,7 @@ class _PosterAndTitle extends StatelessWidget {
                     Icon(Icons.star_outline, size: 15, color: Colors.grey),
                     SizedBox(width: 5),
                     Text(
-                      movie.voteAverage.toStringAsFixed(1), // Formatear número
+                      movie.voteAverage.toStringAsFixed(1),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],

@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:peliculas_app/providers/movies_provider.dart';
+import 'package:peliculas_app/models/movie.dart';
+import 'package:provider/provider.dart';
+import 'package:peliculas_app/screens/screens.dart';
 
 class MovieSlider extends StatelessWidget {
   const MovieSlider({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final moviesProvider = Provider.of<MoviesProvider>(context);
+
+    if (moviesProvider.popularMovies.isEmpty) {
+      return Container(
+        height: 270,
+        width: double.infinity,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Container(
       width: double.infinity,
       height: 270,
@@ -22,8 +36,9 @@ class MovieSlider extends StatelessWidget {
           Expanded(
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: 20,
-              itemBuilder: (_, int index) => _MoviePoster(),
+              itemCount: moviesProvider.popularMovies.length,
+              itemBuilder: (_, int index) =>
+                  _MoviePoster(movie: moviesProvider.popularMovies[index]),
             ),
           ),
         ],
@@ -33,10 +48,17 @@ class MovieSlider extends StatelessWidget {
 }
 
 class _MoviePoster extends StatelessWidget {
-  const _MoviePoster({super.key});
+  final Movie movie;
+
+  const _MoviePoster({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
+    // Construir la URL de la imagen
+    final String imageUrl = movie.posterPath != null
+        ? 'https://image.tmdb.org/t/p/w500${movie.posterPath}'
+        : '';
+
     return Container(
       width: 130,
       height: 190,
@@ -44,28 +66,31 @@ class _MoviePoster extends StatelessWidget {
       child: Column(
         children: [
           GestureDetector(
-            onTap: () => Navigator.pushNamed(
-              context,
-              'detail',
-              arguments: 'movie-instance',
-            ),
+            onTap: () {
+              Navigator.pushNamed(context, 'detail', arguments: movie);
+            },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: FadeInImage(
                 placeholder: AssetImage('assets/no-image.jpg'),
-                image: AssetImage('assets/no-image.jpg'),
+                image: imageUrl.isNotEmpty
+                    ? NetworkImage(imageUrl) as ImageProvider<Object>
+                    : AssetImage('assets/no-image.jpg'),
                 width: 130,
                 height: 190,
                 fit: BoxFit.cover,
+                imageErrorBuilder: (context, error, stackTrace) =>
+                    Image.asset('assets/no-image.jpg', fit: BoxFit.cover),
               ),
             ),
           ),
           SizedBox(height: 5),
           Text(
-            'Scream',
+            movie.title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12),
           ),
         ],
       ),

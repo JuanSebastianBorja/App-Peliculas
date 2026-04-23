@@ -39,7 +39,6 @@ class MoviesProvider extends ChangeNotifier {
         'api_key': _apiKey,
         'language': 'es-MX',
       });
-      // Agregamos timeout para evitar que se congele si la red es lenta
       final response = await http.get(url).timeout(Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -63,12 +62,23 @@ class MoviesProvider extends ChangeNotifier {
         'language': _language,
         'page': '1',
       });
+
+      print("Intentando cargar populares desde: $url");
       final response = await http.get(url);
-      final popularResponse = NowPlayingResponse.fromJson(response.body);
-      popularMovies = popularResponse.results;
-      notifyListeners();
+
+      print("Status Code: ${response.statusCode}");
+      // print("Body: ${response.body}"); // Descomenta esto solo si necesitas ver el JSON crudo
+
+      if (response.statusCode == 200) {
+        final popularResponse = NowPlayingResponse.fromJson(response.body);
+        popularMovies = popularResponse.results;
+        print("Películas populares cargadas: ${popularMovies.length}");
+        notifyListeners();
+      } else {
+        print("Error HTTP: ${response.statusCode} - ${response.reasonPhrase}");
+      }
     } catch (e) {
-      print('Error al cargar películas populares: $e');
+      print('Excepción grave en getPopularMovies: $e');
     }
   }
 }

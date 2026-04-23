@@ -49,20 +49,22 @@ class Movie {
   }
 
   factory Movie.fromMap(Map<String, dynamic> json) => Movie(
-    adult: json["adult"],
+    adult: json["adult"] ?? false,
     backdropPath: json["backdrop_path"],
-    genreIds: List<int>.from(json["genre_ids"].map((x) => x)),
-    id: json["id"],
-    originalLanguage: json["original_language"],
-    originalTitle: json["original_title"],
-    overview: json["overview"],
-    popularity: json["popularity"].toDouble(),
+    genreIds: json["genre_ids"] != null
+        ? List<int>.from(json["genre_ids"].map((x) => x))
+        : [],
+    id: json["id"] ?? 0,
+    originalLanguage: json["original_language"] ?? "",
+    originalTitle: json["original_title"] ?? "",
+    overview: json["overview"] ?? "",
+    popularity: (json["popularity"] ?? 0).toDouble(),
     posterPath: json["poster_path"],
     releaseDate: json["release_date"],
-    title: json["title"],
-    video: json["video"],
-    voteAverage: json["vote_average"].toDouble(),
-    voteCount: json["vote_count"],
+    title: json["title"] ?? "Sin título",
+    video: json["video"] ?? false,
+    voteAverage: (json["vote_average"] ?? 0).toDouble(),
+    voteCount: json["vote_count"] ?? 0,
     cast: json["cast"] != null
         ? List<Cast>.from(json["cast"].map((x) => Cast.fromMap(x)))
         : [],

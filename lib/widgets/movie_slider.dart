@@ -12,34 +12,44 @@ class MovieSlider extends StatelessWidget {
     return Consumer<MoviesProvider>(
       builder: (context, moviesProvider, child) {
         if (moviesProvider.popularMovies.isEmpty) {
-          return Container(
+          return const SizedBox(
             height: 270,
             width: double.infinity,
-            child: const Center(child: CircularProgressIndicator()),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
-        return Container(
-          width: double.infinity,
+        // Usamos un SizedBox para dar altura fija al contenedor principal
+        return SizedBox(
           height: 270,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Populares',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 5),
-              ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: moviesProvider.popularMovies.length,
-                itemBuilder: (_, int index) =>
-                    _MoviePoster(movie: moviesProvider.popularMovies[index]),
-              ),
-            ],
+          child: ListView.builder(
+            // Clave: ScrollDirection.horizontal permite que el ListView crezca horizontalmente
+            // sin chocar con la altura fija del padre.
+            scrollDirection: Axis.horizontal,
+            itemCount:
+                moviesProvider.popularMovies.length + 1, // +1 para el título
+            itemBuilder: (_, int index) {
+              // El índice 0 es el título, el resto son las películas
+              if (index == 0) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Center(
+                    // Centramos verticalmente el título en los 270px
+                    child: Text(
+                      'Populares',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              // Ajustamos el índice para acceder a la lista de películas (restamos 1)
+              final movie = moviesProvider.popularMovies[index - 1];
+              return _MoviePoster(movie: movie);
+            },
           ),
         );
       },
@@ -60,8 +70,7 @@ class _MoviePoster extends StatelessWidget {
 
     return Container(
       width: 130,
-      height: 240,
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
         children: [
           GestureDetector(
@@ -71,26 +80,30 @@ class _MoviePoster extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: FadeInImage(
-                placeholder: AssetImage('assets/no-image.jpg'),
+                placeholder: const AssetImage('assets/no-image.jpg'),
+                // Si no hay URL, usamos la imagen local directamente
                 image: imageUrl.isNotEmpty
                     ? NetworkImage(imageUrl) as ImageProvider<Object>
-                    : AssetImage('assets/no-image.jpg'),
+                    : const AssetImage('assets/no-image.jpg'),
                 width: 130,
                 height: 175,
                 fit: BoxFit.cover,
-                imageErrorBuilder: (context, error, stackTrace) =>
-                    Image.asset('assets/no-image.jpg', fit: BoxFit.cover),
+                imageErrorBuilder: (context, error, stackTrace) {
+                  // Fallback seguro
+                  return Image.asset('assets/no-image.jpg', fit: BoxFit.cover);
+                },
               ),
             ),
           ),
-          SizedBox(height: 5),
-          Expanded(
+          const SizedBox(height: 5),
+          SizedBox(
+            height: 40,
             child: Text(
               movie.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, height: 1.2),
+              style: const TextStyle(fontSize: 12),
             ),
           ),
         ],

@@ -19,22 +19,16 @@ class MovieSlider extends StatelessWidget {
           );
         }
 
-        // Usamos un SizedBox para dar altura fija al contenedor principal
         return SizedBox(
           height: 270,
           child: ListView.builder(
-            // Clave: ScrollDirection.horizontal permite que el ListView crezca horizontalmente
-            // sin chocar con la altura fija del padre.
             scrollDirection: Axis.horizontal,
-            itemCount:
-                moviesProvider.popularMovies.length + 1, // +1 para el título
+            itemCount: moviesProvider.popularMovies.length + 1,
             itemBuilder: (_, int index) {
-              // El índice 0 es el título, el resto son las películas
               if (index == 0) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Center(
-                    // Centramos verticalmente el título en los 270px
                     child: Text(
                       'Populares',
                       style: TextStyle(
@@ -46,7 +40,6 @@ class MovieSlider extends StatelessWidget {
                 );
               }
 
-              // Ajustamos el índice para acceder a la lista de películas (restamos 1)
               final movie = moviesProvider.popularMovies[index - 1];
               return _MoviePoster(movie: movie);
             },
@@ -64,8 +57,12 @@ class _MoviePoster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String imageUrl = movie.posterPath != null
-        ? 'https://image.tmdb.org/t/p/w500${movie.posterPath}'
+    // OPTIMIZACIÓN: Usar w185 en lugar de w500 para listas reduce el uso de memoria en ~70%
+    // Esto es crucial para evitar crashes en emuladores o dispositivos con poca RAM.
+    final String? path = movie.posterPath;
+    // Eliminamos cualquier espacio y usamos tamaño pequeño
+    final String imageUrl = (path != null && path.isNotEmpty)
+        ? 'https://image.tmdb.org/t/p/w185${path.trim()}'
         : '';
 
     return Container(
@@ -79,19 +76,49 @@ class _MoviePoster extends StatelessWidget {
             },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: FadeInImage(
-                placeholder: const AssetImage('assets/no-image.jpg'),
-                // Si no hay URL, usamos la imagen local directamente
-                image: imageUrl.isNotEmpty
-                    ? NetworkImage(imageUrl) as ImageProvider<Object>
-                    : const AssetImage('assets/no-image.jpg'),
+              child: Container(
+                color: Colors.grey[800], // Color de fondo mientras carga
                 width: 130,
-                height: 175,
-                fit: BoxFit.cover,
-                imageErrorBuilder: (context, error, stackTrace) {
-                  // Fallback seguro
-                  return Image.asset('assets/no-image.jpg', fit: BoxFit.cover);
-                },
+                height: 195, // Ajustado para proporción de póster
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        width: 130,
+                        height: 195,
+                        // Manejo de errores robusto
+                        errorBuilder: (context, error, stackTrace) {
+                          // Opcional: Imprimir solo en debug para no saturar logs
+                          // print('Error imagen: ${movie.title}');
+                          return Image.asset(
+                            'assets/no-image.jpg',
+                            fit: BoxFit.cover,
+                            width: 130,
+                            height: 195,
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                  : null,
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white54,
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        'assets/no-image.jpg',
+                        fit: BoxFit.cover,
+                        width: 130,
+                        height: 195,
+                      ),
               ),
             ),
           ),

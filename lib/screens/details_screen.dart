@@ -15,34 +15,69 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   late Movie movie;
   List<Cast>? castList;
-
-  @override
-  void initState() {
-    super.initState();
-    movie = ModalRoute.of(context)!.settings.arguments as Movie;
-  }
+  bool isLoading = true;
+  String? errorMessage;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (castList == null) {
-      _loadCast();
+    // Obtenemos los argumentos solo una vez
+    if (castList == null && !isLoading) return;
+
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args is Movie) {
+      movie = args;
+      // Cargamos el elenco si aún no lo hemos hecho
+      if (castList == null && isLoading) {
+        _loadCast();
+      }
+    } else {
+      setState(() {
+        errorMessage = "No se recibió información de la película";
+        isLoading = false;
+      });
     }
   }
 
   Future<void> _loadCast() async {
-    final moviesProvider = Provider.of<MoviesProvider>(context, listen: false);
-    final cast = await moviesProvider.getCast(movie.id);
+    try {
+      final moviesProvider = Provider.of<MoviesProvider>(
+        context,
+        listen: false,
+      );
 
-    if (mounted) {
-      setState(() {
-        castList = cast;
-      });
+      // Verificamos que el ID sea válido
+      if (movie.id <= 0) throw Exception("ID de película inválido");
+
+      final cast = await moviesProvider.getCast(movie.id);
+
+      if (mounted) {
+        setState(() {
+          castList = cast;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          errorMessage = "Error al cargar actores: $e";
+          isLoading = false;
+        });
+      }
+      print("Error detallado: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Error")),
+        body: Center(child: Text(errorMessage!)),
+      );
+    }
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -51,15 +86,18 @@ class _DetailScreenState extends State<DetailScreen> {
             delegate: SliverChildListDelegate([
               _PosterAndTitle(movie: movie),
               _Overview(movie: movie),
-              // Mostrar loader o lista
-              castList == null
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  : CastingCards(casts: castList!),
+              if (isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (castList != null && castList!.isNotEmpty)
+                CastingCards(casts: castList!)
+              else
+                const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Center(child: Text("No hay actores disponibles")),
+                ),
             ]),
           ),
         ],

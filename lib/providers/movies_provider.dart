@@ -4,7 +4,7 @@ import 'package:peliculas_app/models/models.dart';
 import 'dart:convert';
 
 class MoviesProvider extends ChangeNotifier {
-  String _apyKey = 'cd000327b9663451fd4de423f4e0aa47';
+  String _apiKey = 'cd000327b9663451fd4de423f4e0aa47';
   String _baseUrl = 'api.themoviedb.org';
   String _language = 'es-ES';
 
@@ -14,30 +14,43 @@ class MoviesProvider extends ChangeNotifier {
     print('Movies provider inicializado');
     this.getOnDisplayMovies();
   }
+
   getOnDisplayMovies() async {
-    var url = Uri.https(this._baseUrl, '3/movie/now_playing', {
-      'api_key': _apyKey,
-      'language': _language,
-      'page': '1',
-    });
-    final response = await http.get(url);
-    final nowPlayingResponse = NowPlayingResponse.fromJson(response.body);
-    onDisplayMovies = nowPlayingResponse.results;
-    notifyListeners();
+    try {
+      var url = Uri.https(this._baseUrl, '3/movie/now_playing', {
+        'api_key': _apiKey,
+        'language': _language,
+        'page': '1',
+      });
+      final response = await http.get(url);
+      final nowPlayingResponse = NowPlayingResponse.fromJson(response.body);
+      onDisplayMovies = nowPlayingResponse.results;
+      notifyListeners();
+    } catch (e) {
+      print('Error al cargar películas: $e');
+    }
   }
 
   Future<List<Cast>> getCast(int movieId) async {
-    final url = Uri.https('api.themoviedb.org', '3/movie/$movieId/credits', {
-      'api_key': _apyKey,
-      'language': 'es-MX',
-    });
+    try {
+      final url = Uri.https('api.themoviedb.org', '3/movie/$movieId/credits', {
+        'api_key': _apiKey,
+        'language': 'es-MX',
+      });
 
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final decodedData = json.decode(response.body);
-      // La API devuelve los actores en la propiedad "cast"
-      return CastResponse.fromJson(decodedData).cast;
-    } else {
+      // Agregamos timeout para evitar que se congele si la red es lenta
+      final response = await http.get(url).timeout(Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final decodedData = json.decode(response.body);
+        return CastResponse.fromJson(decodedData).cast;
+      } else {
+        print('Error HTTP ${response.statusCode}: ${response.reasonPhrase}');
+        return [];
+      }
+    } catch (e) {
+      print('Excepción en getCast: $e');
+      // Retornamos lista vacía en caso de error para no romper la UI
       return [];
     }
   }

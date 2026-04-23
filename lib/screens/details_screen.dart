@@ -143,48 +143,70 @@ class _CustomAppBar extends StatelessWidget {
 
 class _PosterAndTitle extends StatelessWidget {
   final Movie movie;
+
   const _PosterAndTitle({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
-    final String imageUrl =
-        'https://image.tmdb.org/t/p/w500 ${movie.posterPath}';
+    final String posterPath = movie.posterPath?.trim() ?? '';
+    final String imageUrl = posterPath.isNotEmpty
+        ? 'https://image.tmdb.org/t/p/w500$posterPath'
+        : '';
+
     return Container(
       margin: const EdgeInsets.only(top: 20),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadiusGeometry.circular(20),
+            borderRadius: BorderRadius.circular(20),
             child: FadeInImage(
               placeholder: const AssetImage('assets/no-image.jpg'),
-              image: NetworkImage(imageUrl),
+              image: imageUrl.isNotEmpty
+                  ? NetworkImage(imageUrl) as ImageProvider
+                  : const AssetImage('assets/no-image.jpg'),
               fit: BoxFit.cover,
               height: 150,
               width: 100,
+              imageErrorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/no-image.jpg',
+                  height: 150,
+                  width: 100,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
           const SizedBox(width: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                movie.title,
-                style: Theme.of(context).textTheme.headlineSmall,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.star_outline, size: 15, color: Colors.grey),
-                  const SizedBox(width: 5),
-                  Text(
-                    movie.voteAverage.toString(),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  movie.title,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_outline,
+                      size: 15,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      movie.voteAverage.toStringAsFixed(1),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

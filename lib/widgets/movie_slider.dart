@@ -9,40 +9,40 @@ class MovieSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final moviesProvider = Provider.of<MoviesProvider>(context);
+    return Consumer<MoviesProvider>(
+      builder: (context, moviesProvider, child) {
+        if (moviesProvider.popularMovies.isEmpty) {
+          return Container(
+            height: 270,
+            width: double.infinity,
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    if (moviesProvider.popularMovies.isEmpty) {
-      return Container(
-        height: 270,
-        width: double.infinity,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Container(
-      width: double.infinity,
-      height: 270,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Populares',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+        return Container(
+          width: double.infinity,
+          height: 270,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Populares',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 5),
+              ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: moviesProvider.popularMovies.length,
+                itemBuilder: (_, int index) =>
+                    _MoviePoster(movie: moviesProvider.popularMovies[index]),
+              ),
+            ],
           ),
-          SizedBox(height: 5),
-          Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: moviesProvider.popularMovies.length,
-              itemBuilder: (_, int index) =>
-                  _MoviePoster(movie: moviesProvider.popularMovies[index]),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -54,14 +54,13 @@ class _MoviePoster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Construir la URL de la imagen
     final String imageUrl = movie.posterPath != null
         ? 'https://image.tmdb.org/t/p/w500${movie.posterPath}'
         : '';
 
     return Container(
       width: 130,
-      height: 190,
+      height: 240,
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(
         children: [
@@ -77,7 +76,7 @@ class _MoviePoster extends StatelessWidget {
                     ? NetworkImage(imageUrl) as ImageProvider<Object>
                     : AssetImage('assets/no-image.jpg'),
                 width: 130,
-                height: 190,
+                height: 175,
                 fit: BoxFit.cover,
                 imageErrorBuilder: (context, error, stackTrace) =>
                     Image.asset('assets/no-image.jpg', fit: BoxFit.cover),
@@ -85,12 +84,14 @@ class _MoviePoster extends StatelessWidget {
             ),
           ),
           SizedBox(height: 5),
-          Text(
-            movie.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12),
+          Expanded(
+            child: Text(
+              movie.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, height: 1.2),
+            ),
           ),
         ],
       ),

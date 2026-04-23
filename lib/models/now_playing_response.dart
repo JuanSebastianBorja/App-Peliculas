@@ -3,14 +3,14 @@ import 'package:peliculas_app/models/models.dart';
 
 class NowPlayingResponse {
   NowPlayingResponse({
-    required this.dates,
+    this.dates,
     required this.page,
     required this.results,
     required this.totalPages,
     required this.totalResults,
   });
 
-  Dates dates;
+  Dates? dates;
   int page;
   List<Movie> results;
   int totalPages;
@@ -21,11 +21,19 @@ class NowPlayingResponse {
 
   factory NowPlayingResponse.fromMap(Map<String, dynamic> json) =>
       NowPlayingResponse(
-        dates: Dates.fromMap(json["dates"]),
-        page: json["page"],
-        results: List<Movie>.from(json["results"].map((x) => Movie.fromMap(x))),
-        totalPages: json["total_pages"],
-        totalResults: json["total_results"],
+        dates: json["dates"] != null ? Dates.fromMap(json["dates"]) : null,
+        page: json["page"] ?? 1,
+        results: json["results"] != null
+            ? List<Movie>.from(
+                json["results"]
+                    .where(
+                      (element) => element != null,
+                    ) // <--- Filtrar nulos aquí
+                    .map((x) => Movie.fromMap(x)),
+              )
+            : [],
+        totalPages: json["total_pages"] ?? 0,
+        totalResults: json["total_results"] ?? 0,
       );
 }
 

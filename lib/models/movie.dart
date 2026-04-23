@@ -38,15 +38,17 @@ class Movie {
 
   get fullPosterImg {
     if (this.posterPath != null)
-      return 'https://image.tmdb.org/t/p/w500${this.posterPath}';
-    return 'https://www.google.com.co/url?sa=i&url=https%3A%2F%2Fwww.legrand.com.kh%2Fen%2Fcatalog%2Fproducts%2Fcircuit-breaker-dmx-sp-4000-4-poles-draw-out-version-and-electronic-protection-unit-670277&psig=AOvVaw3sJitbva3qSYvicMpdkDQK&ust=1738352748424000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCOi47eKanosDFQAAAAAdAAAAABAE';
+      return 'https://image.tmdb.org/t/p/w500 ${this.posterPath}';
+    return 'assets/no-image.jpg';
   }
 
   get fullBackdropPath {
-    if (this.posterPath != null)
-      return 'https://image.tmdb.org/t/p/w500${this.backdropPath}';
-    return 'https://www.google.com.co/url?sa=i&url=https%3A%2F%2Fwww.legrand.com.kh%2Fen%2Fcatalog%2Fproducts%2Fcircuit-breaker-dmx-sp-4000-4-poles-draw-out-version-and-electronic-protection-unit-670277&psig=AOvVaw3sJitbva3qSYvicMpdkDQK&ust=1738352748424000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCOi47eKanosDFQAAAAAdAAAAABAE';
+    if (this.backdropPath != null)
+      return 'https://image.tmdb.org/t/p/w500 ${this.backdropPath}';
+    return 'assets/no-image.jpg';
   }
+
+  factory Movie.fromJson(String str) => Movie.fromMap(json.decode(str));
 
   factory Movie.fromMap(Map<String, dynamic> json) => Movie(
     adult: json["adult"] ?? false,

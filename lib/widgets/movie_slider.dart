@@ -23,7 +23,6 @@ class MovieSlider extends StatelessWidget {
           height: 270,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            // Añadimos un item extra para el título
             itemCount: moviesProvider.popularMovies.length + 1,
             itemBuilder: (_, int index) {
               if (index == 0) {
@@ -58,15 +57,15 @@ class _MoviePoster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Validación estricta de la URL
     final String? path = movie.posterPath;
-    final bool hasImage = path != null && path.isNotEmpty;
-    final String imageUrl = hasImage
-        ? 'https://image.tmdb.org/t/p/w185${path.trim()}' // Usamos w185 para ahorrar memoria
+
+    // CORRECCIÓN CRÍTICA: Sin espacios entre w92 y la ruta
+    final String imageUrl = (path != null && path.isNotEmpty)
+        ? 'https://image.tmdb.org/t/p/w92${path.trim()}'
         : '';
 
     return Container(
-      width: 130,
+      width: 110,
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       child: Column(
         children: [
@@ -75,65 +74,44 @@ class _MoviePoster extends StatelessWidget {
               Navigator.pushNamed(context, 'detail', arguments: movie);
             },
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
               child: Container(
-                color: Colors.grey[800], // Color de fondo mientras carga
-                width: 130,
-                height: 195,
-                child: hasImage
+                color: Colors.grey[800],
+                width: 110,
+                height: 165,
+                child: imageUrl.isNotEmpty
                     ? Image.network(
                         imageUrl,
                         fit: BoxFit.cover,
-                        // frameBuilder ayuda a evitar parpadeos y gestiona mejor la memoria
-                        frameBuilder:
-                            (context, child, frame, wasSynchronouslyLoaded) {
-                              if (wasSynchronouslyLoaded) return child;
-                              return AnimatedOpacity(
-                                opacity: frame == null ? 0 : 1,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeOut,
-                                child: child,
-                              );
-                            },
+                        width: 110,
+                        height: 165,
+                        cacheWidth: 110,
+                        cacheHeight: 165,
                         errorBuilder: (context, error, stackTrace) {
-                          // Fallback silencioso si falla la red
                           return const Icon(
                             Icons.broken_image,
                             color: Colors.white54,
-                          );
-                        },
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white54,
-                              ),
-                            ),
+                            size: 30,
                           );
                         },
                       )
                     : const Icon(
                         Icons.image_not_supported,
                         color: Colors.white54,
+                        size: 30,
                       ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           SizedBox(
-            height: 40,
+            height: 34,
             child: Text(
               movie.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
             ),
           ),
         ],

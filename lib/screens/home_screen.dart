@@ -31,31 +31,76 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Peliculas en Cartelera'),
-        elevation: 0,
+        title: const Text(
+          'Peliculas en Cartelera',
+          style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.2),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFEAF2FF), Color(0xFFF7FAFC)],
+            ),
+          ),
+        ),
         actions: [
-          IconButton(
-            onPressed: () {
-              final moviesProvider = Provider.of<MoviesProvider>(
-                context,
-                listen: false,
-              );
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () {
+                final moviesProvider = Provider.of<MoviesProvider>(
+                  context,
+                  listen: false,
+                );
 
-              showSearch(
-                context: context,
-                delegate: MovieSearchDelegate(moviesProvider: moviesProvider),
-              );
-            },
-            icon: const Icon(Icons.search_outlined),
+                showSearch(
+                  context: context,
+                  delegate: MovieSearchDelegate(moviesProvider: moviesProvider),
+                );
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x14000000),
+                      blurRadius: 14,
+                      offset: Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.search_outlined),
+              ),
+            ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            CardSwiper(movies: moviesProvider.onDisplayMovies),
-            MovieSlider(), // Ahora cargará sus datos diferidamente
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF7FAFC), Color(0xFFEAF2FF)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 12),
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 20)),
+              const SizedBox(height: 16),
+              CardSwiper(movies: moviesProvider.onDisplayMovies),
+              const SizedBox(height: 12),
+              MovieSlider(),
+              const SizedBox(height: 18),
+            ],
+          ),
         ),
       ),
     );
@@ -99,7 +144,13 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
 
     if (results.isEmpty) {
       return const Center(
-        child: Text('No se encontraron películas con ese nombre'),
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Text(
+            'No se encontraron películas con ese nombre',
+            textAlign: TextAlign.center,
+          ),
+        ),
       );
     }
 
@@ -108,16 +159,39 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
       itemBuilder: (context, index) {
         final movie = results[index];
         return ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 6,
+          ),
           leading: movie.posterPath != null
               ? Image.network(
                   movie.fullPosterImg,
                   width: 50,
+                  height: 70,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.broken_image),
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 50,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.broken_image),
+                  ),
                 )
-              : const Icon(Icons.movie),
-          title: Text(movie.title),
+              : Container(
+                  width: 50,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.movie),
+                ),
+          title: Text(
+            movie.title,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           subtitle: Text(movie.originalTitle),
           onTap: () {
             close(context, movie);
@@ -150,16 +224,39 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
       itemBuilder: (context, index) {
         final movie = results[index];
         return ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 6,
+          ),
           leading: movie.posterPath != null
               ? Image.network(
                   movie.fullPosterImg,
                   width: 50,
+                  height: 70,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.broken_image),
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 50,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.broken_image),
+                  ),
                 )
-              : const Icon(Icons.movie),
-          title: Text(movie.title),
+              : Container(
+                  width: 50,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.movie),
+                ),
+          title: Text(
+            movie.title,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           onTap: () {
             query = movie.title;
             showResults(context);

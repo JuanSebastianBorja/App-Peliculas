@@ -56,12 +56,14 @@ class _DetailScreenState extends State<DetailScreen> {
   Widget build(BuildContext context) {
     if (errorMessage != null) {
       return Scaffold(
+        backgroundColor: const Color(0xFFF4F7FB),
         appBar: AppBar(title: const Text("Error")),
         body: Center(child: Text(errorMessage!)),
       );
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F7FB),
       body: CustomScrollView(
         slivers: [
           _CustomAppBar(movie: widget.movie),
@@ -101,21 +103,29 @@ class _CustomAppBar extends StatelessWidget {
         : '';
 
     return SliverAppBar(
-      backgroundColor: Colors.blue,
-      expandedHeight: 200,
+      backgroundColor: const Color(0xFF102A43),
+      expandedHeight: 240,
       floating: false,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
-        titlePadding: EdgeInsets.all(0),
+        titlePadding: const EdgeInsets.only(left: 16, right: 16, bottom: 14),
         title: Container(
           width: double.infinity,
-          alignment: Alignment.bottomCenter,
-          color: Colors.black12,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Text(
             movie.title,
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
             overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
           ),
         ),
         background: FadeInImage(
@@ -146,12 +156,23 @@ class _PosterAndTitle extends StatelessWidget {
         : '';
 
     return Container(
-      margin: EdgeInsets.only(top: 20),
-      padding: EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadiusGeometry.circular(20),
+            borderRadius: BorderRadius.circular(20),
             child: SizedBox(
               width: 100,
               height: 150,
@@ -168,28 +189,38 @@ class _PosterAndTitle extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   movie.title,
-                  style: Theme.of(context).textTheme.headlineSmall,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.headlineSmall?.copyWith(fontSize: 24),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 2,
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 10),
                 Row(
                   children: [
-                    Icon(Icons.star_outline, size: 15, color: Colors.grey),
-                    SizedBox(width: 5),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 18,
+                      color: Color(0xFFF5A524),
+                    ),
+                    const SizedBox(width: 6),
                     Text(
                       movie.voteAverage.toStringAsFixed(1),
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 10),
+                _InfoChip(text: movie.releaseDate ?? 'Fecha no disponible'),
               ],
             ),
           ),
@@ -206,11 +237,48 @@ class _Overview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
       child: Text(
         movie.overview ?? 'Sin descripción disponible.',
         textAlign: TextAlign.justify,
         style: Theme.of(context).textTheme.labelMedium,
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final String text;
+
+  const _InfoChip({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF2FF),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF0F4C81),
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
       ),
     );
   }

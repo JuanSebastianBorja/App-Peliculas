@@ -19,31 +19,33 @@ class MovieSlider extends StatelessWidget {
           );
         }
 
-        return SizedBox(
-          height: 270,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: moviesProvider.popularMovies.length + 1,
-            itemBuilder: (_, int index) {
-              if (index == 0) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Center(
-                    child: Text(
-                      'Populares',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                children: const [
+                  Text(
+                    'Populares',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                   ),
-                );
-              }
-
-              final movie = moviesProvider.popularMovies[index - 1];
-              return _MoviePoster(movie: movie);
-            },
-          ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 270,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: moviesProvider.popularMovies.length,
+                itemBuilder: (_, int index) {
+                  final movie = moviesProvider.popularMovies[index];
+                  return _MoviePoster(movie: movie);
+                },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -74,9 +76,18 @@ class _MoviePoster extends StatelessWidget {
               Navigator.pushNamed(context, 'detail', arguments: movie);
             },
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(18),
               child: Container(
-                color: Colors.grey[800],
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 16,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
                 width: 110,
                 height: 165,
                 child: imageUrl.isNotEmpty
@@ -111,7 +122,11 @@ class _MoviePoster extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF102A43),
+              ),
             ),
           ),
         ],

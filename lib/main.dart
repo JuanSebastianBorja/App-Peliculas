@@ -35,8 +35,28 @@ class MyApp extends StatelessWidget {
           return DetailScreen(movie: movie);
         },
       },
-      theme: ThemeData.light().copyWith(
-        appBarTheme: AppBarTheme(backgroundColor: Colors.lightBlue),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0F4C81),
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF4F7FB),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Color(0xFF102A43),
+          centerTitle: true,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+        ),
+        textTheme: const TextTheme(
+          headlineSmall: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF102A43),
+          ),
+          bodyMedium: TextStyle(color: Color(0xFF425466)),
+          labelMedium: TextStyle(color: Color(0xFF516173), height: 1.5),
+        ),
       ),
     );
   }

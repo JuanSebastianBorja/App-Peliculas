@@ -11,6 +11,32 @@ class MoviesProvider extends ChangeNotifier {
   List<Movie> onDisplayMovies = [];
   List<Movie> popularMovies = [];
 
+  List<Movie> get allMovies {
+    final moviesById = <int, Movie>{};
+
+    for (final movie in onDisplayMovies) {
+      moviesById[movie.id] = movie;
+    }
+
+    for (final movie in popularMovies) {
+      moviesById[movie.id] = movie;
+    }
+
+    return moviesById.values.toList();
+  }
+
+  List<Movie> searchMovies(String query) {
+    final normalizedQuery = query.trim().toLowerCase();
+
+    if (normalizedQuery.isEmpty) {
+      return [];
+    }
+
+    return allMovies
+        .where((movie) => movie.title.toLowerCase().contains(normalizedQuery))
+        .toList();
+  }
+
   MoviesProvider() {
     print('Movies provider inicializado');
     this.getOnDisplayMovies();
